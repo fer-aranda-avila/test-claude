@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué planta eres? 🌿</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1a3a2a;
+    --green-mid: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #d8f3dc;
+    --cream: #faf8f2;
+    --sand: #f0ebe0;
+    --amber: #e9a830;
+    --brown: #6b4423;
+    --text: #1a2e1f;
+    --text-muted: #4a6358;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Decorative blob background */
+  .bg-blobs {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.18;
+  }
+  .blob-1 { width: 400px; height: 400px; background: var(--green-light); top: -100px; right: -100px; }
+  .blob-2 { width: 300px; height: 300px; background: var(--amber); bottom: 100px; left: -80px; }
+  .blob-3 { width: 200px; height: 200px; background: var(--green-mid); top: 50%; left: 60%; }
+
+  .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* === SCREENS === */
+  .screen {
+    display: none; flex-direction: column; min-height: 100vh;
+    padding: 0; animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === WELCOME SCREEN === */
+  .welcome-top {
+    background: var(--green-dark);
+    padding: 60px 28px 48px;
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+  .welcome-top::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 0; right: 0;
+    height: 60px;
+    background: var(--cream);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    transform: scaleX(1.1);
+  }
+
+  .welcome-emoji-ring {
+    width: 90px; height: 90px;
+    background: var(--green-mid);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px;
+    margin: 0 auto 24px;
+    border: 3px solid var(--green-light);
+    box-shadow: 0 0 0 8px rgba(82,183,136,0.15);
+  }
+  .welcome-top h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 42px; font-weight: 900;
+    color: var(--cream);
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .welcome-top h1 em {
+    font-style: italic;
+    color: var(--green-light);
+  }
+  .welcome-subtitle {
+    text-align: center;
+    color: rgba(255,255,255,0.65);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .welcome-body {
+    padding: 48px 28px 32px;
+    flex: 1;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .welcome-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 36px;
+  }
+  .welcome-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 14px;
+    border: 1.5px solid var(--sand);
+    text-align: center;
+  }
+  .welcome-card .wc-emoji { font-size: 28px; margin-bottom: 6px; }
+  .welcome-card .wc-name {
+    font-family: 'Fraunces', serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 3px;
+  }
+  .welcome-card .wc-tag {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--green-pale);
+    border-radius: 20px; padding: 2px 8px;
+    display: inline-block;
+  }
+  .welcome-note {
+    font-size: 13px; color: var(--text-muted);
+    text-align: center; margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* === BUTTONS === */
+  .btn-primary {
+    display: block; width: 100%;
+    background: var(--green-mid);
+    color: white;
+    border: none; border-radius: 20px;
+    padding: 18px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px; font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    box-shadow: 0 4px 20px rgba(45,106,79,0.3);
+    letter-spacing: -0.2px;
+  }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(45,106,79,0.2); }
+  .btn-primary:hover { background: var(--green-dark); }
+
+  /* === QUESTION SCREEN === */
+  .q-header {
+    padding: 20px 24px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .q-back {
+    width: 36px; height: 36px;
+    background: white; border: 1.5px solid var(--sand);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text-muted);
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .q-back:active { background: var(--sand); }
+
+  .progress-wrap { flex: 1; }
+  .progress-label {
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .progress-bar-track {
+    height: 6px; background: var(--sand);
+    border-radius: 10px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; background: var(--green-light);
+    border-radius: 10px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .q-body { padding: 8px 24px 32px; flex: 1; display: flex; flex-direction: column; }
+
+  .q-number {
+    font-size: 12px; font-weight: 600; color: var(--green-light);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 24px; font-weight: 700;
+    line-height: 1.3;
+    color: var(--green-dark);
+    margin-bottom: 28px;
+  }
+
+  .options-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+  .option-btn {
+    background: white;
+    border: 2px solid var(--sand);
+    border-radius: 16px;
+    padding: 16px 18px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 12px;
+    line-height: 1.4;
+  }
+  .option-btn .opt-dot {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border-radius: 50%; border: 2px solid var(--sand);
+    background: var(--cream);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option-btn:hover { border-color: var(--green-light); background: var(--green-pale); }
+  .option-btn.selected {
+    border-color: var(--green-mid);
+    background: linear-gradient(135deg, #e8f5ee, #d8f3dc);
+  }
+  .option-btn.selected .opt-dot {
+    background: var(--green-mid);
+    border-color: var(--green-mid);
+  }
+  .option-btn.selected .opt-dot::after {
+    content: '✓'; font-size: 12px; color: white; font-weight: 700;
+  }
+
+  .q-footer {
+    padding: 16px 24px 32px;
+  }
+  .btn-next {
+    display: block; width: 100%;
+    background: var(--green-mid);
+    color: white; border: none; border-radius: 20px;
+    padding: 17px; font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.4; pointer-events: none;
+  }
+  .btn-next.enabled { opacity: 1; pointer-events: all; box-shadow: 0 4px 20px rgba(45,106,79,0.3); }
+  .btn-next.enabled:active { transform: scale(0.97); }
+
+  /* === LOADING SCREEN === */
+  #screen-loading {
+    align-items: center; justify-content: center;
+    text-align: center; padding: 48px 28px;
+  }
+  .loading-plant { font-size: 72px; animation: bounce 1s infinite; margin-bottom: 24px; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .loading-text {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--green-dark); margin-bottom: 10px;
+  }
+  .loading-sub { font-size: 14px; color: var(--text-muted); }
+  .loading-dots { display: inline-flex; gap: 6px; margin-top: 24px; }
+  .loading-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green-light); animation: dot 1.2s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot { 0%,80%,100%{transform:scale(0.7);opacity:0.5} 40%{transform:scale(1);opacity:1} }
+
+  /* === RESULT SCREEN === */
+  .result-top {
+    padding: 40px 28px 0;
+    text-align: center;
+    position: relative;
+  }
+  .result-tag {
+    display: inline-block;
+    background: var(--green-pale);
+    color: var(--green-mid);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .result-emoji-big {
+    font-size: 80px; display: block;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.1));
+    animation: plantPop 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes plantPop {
+    from { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .result-plant-name {
+    font-family: 'Fraunces', serif;
+    font-size: 40px; font-weight: 900;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+  .result-personality {
+    font-size: 18px; font-weight: 600;
+    color: var(--green-mid);
+    margin-bottom: 24px;
+  }
+
+  .result-card {
+    background: var(--green-dark);
+    border-radius: 24px;
+    margin: 0 24px 24px;
+    padding: 24px;
+    color: white;
+    position: relative; overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .result-card-quote {
+    font-family: 'Fraunces', serif;
+    font-size: 19px; font-weight: 400;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--green-pale);
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .result-card-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    position: relative; z-index: 1;
+  }
+
+  .result-traits {
+    margin: 0 24px 24px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .trait-pill {
+    background: white;
+    border: 1.5px solid var(--sand);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px; color: var(--text-muted);
+  }
+
+  .result-date-banner {
+    margin: 0 24px 32px;
+    background: var(--amber);
+    border-radius: 16px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .result-date-banner p {
+    font-size: 14px; font-weight: 600;
+    color: var(--brown);
+    line-height: 1.5;
+  }
+
+  .result-footer { padding: 0 24px 40px; }
+  .btn-retry {
+    display: block; width: 100%;
+    background: transparent;
+    border: 2px solid var(--green-mid);
+    color: var(--green-mid);
+    border-radius: 20px; padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-retry:active { background: var(--green-pale); }
+</style>
+</head>
+<body>
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<div class="app">
+
+  <!-- WELCOME -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-top">
+      <div class="welcome-emoji-ring">🌿</div>
+      <h1>¿Qué <em>planta</em> eres?</h1>
+      <p class="welcome-subtitle">10 preguntas para descubrir qué tipo de planta encaja contigo</p>
+    </div>
+    <div class="welcome-body">
+      <div>
+        <div class="welcome-cards">
+          <div class="welcome-card">
+            <div class="wc-emoji">🪴</div>
+            <div class="wc-name">Potus</div>
+            <div class="wc-tag">Independiente</div>
+          </div>
+          <div class="welcome-card">
+            <div class="wc-emoji">🌵</div>
+            <div class="wc-name">Cactus</div>
+            <div class="wc-tag">Duro/a de pelar</div>
+          </div>
+          <div class="welcome-card">
+            <div class="wc-emoji">💜</div>
+            <div class="wc-name">Lavanda</div>
+            <div class="wc-tag">Zen</div>
+          </div>
+          <div class="welcome-card">
+            <div class="wc-emoji">🌿</div>
+            <div class="wc-name">Albahaca</div>
+            <div class="wc-tag">Práctico/a</div>
+          </div>
+        </div>
+        <div class="welcome-card" style="margin-bottom:24px;display:flex;align-items:center;gap:14px;text-align:left;">
+          <div style="font-size:28px;">🌺</div>
+          <div>
+            <div class="wc-name">Bromelia</div>
+            <div class="wc-tag">Showstopper</div>
+          </div>
+        </div>
+        <p class="welcome-note">Día del Medio Ambiente 🌍<br>Tu planta te espera el <strong>5 de junio</strong></p>
+      </div>
+      <button class="btn-primary" onclick="startQuiz()">Descúbrelo 🌿</button>
+    </div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="screen-question">
+    <div class="q-header">
+      <div class="q-back" onclick="goBack()">←</div>
+      <div class="progress-wrap">
+        <div class="progress-label" id="progress-label">Pregunta 1 de 10</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-bar" style="width:10%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="q-body">
+      <div class="q-number" id="q-number">01</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+    </div>
+    <div class="q-footer">
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="screen" id="screen-loading">
+    <div class="loading-plant">🌱</div>
+    <div class="loading-text">Calculando tu planta...</div>
+    <div class="loading-sub">Analizando tus respuestas con máxima seriedad botánica</div>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="result-top">
+      <div class="result-tag">Tu planta es...</div>
+      <span class="result-emoji-big" id="result-emoji"></span>
+      <div class="result-plant-name" id="result-name"></div>
+      <div class="result-personality" id="result-personality"></div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-quote" id="result-quote"></div>
+      <div class="result-card-desc" id="result-desc"></div>
+    </div>
+    <div class="result-traits" id="result-traits"></div>
+    <div class="result-date-banner">
+      <p>🌿 Tu planta te estará esperando el <strong>5 de junio</strong> 🌍</p>
+    </div>
+    <div class="result-footer">
+      <button class="btn-retry" onclick="restartQuiz()">Volver a empezar 🔄</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    text: "Es lunes por la mañana. ¿Qué haces?",
+    options: [
+      { text: "Llego antes que nadie, ya tengo el correo gestionado", letter: "A" },
+      { text: "Llego justo, sin estrés, con mi café", letter: "L" },
+      { text: "Llego, saludo a todo el mundo y ya estoy lanzado/a", letter: "B" },
+      { text: "Llego, me pongo los auriculares y a lo mío", letter: "P" },
+      { text: "Llego. Ya es suficiente mérito", letter: "C" }
+    ]
+  },
+  {
+    text: "Te toca organizar la comida de empresa. ¿Cuál es tu rol?",
+    options: [
+      { text: "Propongo el sitio, reservo y aviso a todos", letter: "A" },
+      { text: "Sugiero algo, pero que decidan los demás", letter: "L" },
+      { text: "Propongo el plan más épico posible", letter: "B" },
+      { text: "Me da igual donde sea, yo voy", letter: "P" },
+      { text: "Preferiría no organizarlo, pero si me toca, lo hago", letter: "C" }
+    ]
+  },
+  {
+    text: "Hay un problema urgente en el trabajo. ¿Qué haces?",
+    options: [
+      { text: "Analizo, hago un plan y lo ejecuto", letter: "A" },
+      { text: "Respiro hondo y busco la solución con calma", letter: "L" },
+      { text: "Tomo el mando y lidero la crisis", letter: "B" },
+      { text: "Lo resuelvo por mi cuenta sin hacer ruido", letter: "P" },
+      { text: "Lo afronto de frente sin dramatizar", letter: "C" }
+    ]
+  },
+  {
+    text: "¿Cómo es tu escritorio (físico o digital)?",
+    options: [
+      { text: "Ordenado por carpetas y categorías", letter: "A" },
+      { text: "Limpio, minimalista, dos cositas bien puestas", letter: "L" },
+      { text: "Hay caos, pero yo sé dónde está todo", letter: "B" },
+      { text: "Funcional. No está ordenado, pero tampoco es un desastre", letter: "P" },
+      { text: "Cuatro cosas y listo. Menos es más", letter: "C" }
+    ]
+  },
+  {
+    text: "¿Cuál es tu superpoder en el equipo?",
+    options: [
+      { text: "Siempre encuentro la solución más eficiente", letter: "A" },
+      { text: "Relajo el ambiente cuando hay tensión", letter: "L" },
+      { text: "Contagio energía y motivación", letter: "B" },
+      { text: "No necesito supervisión para sacar el trabajo", letter: "P" },
+      { text: "Aguanto lo que haga falta sin quejarme", letter: "C" }
+    ]
+  },
+  {
+    text: "Te regalan un fin de semana libre. ¿Qué haces?",
+    options: [
+      { text: "Organizo un plan con actividades y horario", letter: "A" },
+      { text: "Me voy a la naturaleza a desconectar", letter: "L" },
+      { text: "Plan con amigos, cuanto más grande mejor", letter: "B" },
+      { text: "Me quedo en casa haciendo lo que me apetece", letter: "P" },
+      { text: "Algo físico o de aventura, solo/a o en grupo", letter: "C" }
+    ]
+  },
+  {
+    text: "¿Cómo reaccionas cuando te cambian los planes de golpe?",
+    options: [
+      { text: "Me adapto, pero necesito un momento para reorganizarme", letter: "A" },
+      { text: "Me lo tomo con calma, total, todo pasa", letter: "L" },
+      { text: "Me emociona el caos, me pone", letter: "B" },
+      { text: "Me da igual, fluyo", letter: "P" },
+      { text: "No me afecta. Ya me han pasado cosas peores", letter: "C" }
+    ]
+  },
+  {
+    text: "¿Qué tipo de reuniones aguantas mejor?",
+    options: [
+      { text: "Las que tienen agenda y acaban a su hora", letter: "A" },
+      { text: "Las tranquilas, de lluvia de ideas sin presión", letter: "L" },
+      { text: "Las de brainstorming donde puedo proponer cosas", letter: "B" },
+      { text: "Las que son cortas y van al grano", letter: "P" },
+      { text: "Todas. Me da igual.", letter: "C" }
+    ]
+  },
+  {
+    text: "Alguien nuevo llega al equipo. ¿Qué haces?",
+    options: [
+      { text: "Le explico los procesos y cómo funciona todo", letter: "A" },
+      { text: "Le doy la bienvenida con calma y me ofrezco a ayudar", letter: "L" },
+      { text: "Le presento a todo el mundo el primer día", letter: "B" },
+      { text: "Le dejo espacio para que se adapte solo", letter: "P" },
+      { text: "Asiento con la cabeza. Ya se irá soltando", letter: "C" }
+    ]
+  },
+  {
+    text: "¿Con qué frase te identificas más?",
+    options: [
+      { text: '"Si hay un sistema mejor, lo encuentro yo"', letter: "A" },
+      { text: '"Hay que disfrutar el camino, no solo el destino"', letter: "L" },
+      { text: '"Entro en una sala y la gente lo nota"', letter: "B" },
+      { text: '"No necesito aplausos para hacer bien mi trabajo"', letter: "P" },
+      { text: '"Lo que no me mata, me hace más fuerte"', letter: "C" }
+    ]
+  }
+];
+
+const plants = {
+  P: {
+    emoji: "🪴",
+    name: "Potus",
+    personality: "El/la Independiente",
+    quote: "No necesitas que nadie te riegue. Te buscas la luz tú solo/a.",
+    desc: "Eres de los que no necesitan que estén encima para funcionar. Autosuficiente, adaptable y sin dramas. Como el potus, prosperas en casi cualquier situación y sin demasiada atención.",
+    traits: ["Autosuficiente", "Adaptable", "Sin dramas", "Centrado/a"]
+  },
+  C: {
+    emoji: "🌵",
+    name: "Cactus",
+    personality: "El/la Duro/a de pelar",
+    quote: "Aguantas lo que sea. Sequías, reuniones de dos horas, lo que haga falta.",
+    desc: "Resistente, directo/a y sin florituras. No te quejas, no necesitas atención constante y cuando hay que aguantar, aguantas. Eso se llama carácter, y tú tienes de sobra.",
+    traits: ["Resistente", "Directo/a", "Sin quejas", "Incombustible"]
+  },
+  L: {
+    emoji: "💜",
+    name: "Lavanda",
+    personality: "El/la Zen",
+    quote: "Donde tú estás, el ambiente mejora. Eres el aceite esencial del equipo.",
+    desc: "Tienes ese don de calmar el ambiente cuando todo se complica. Pausado/a, empático/a y con una energía que contagia tranquilidad. La lavanda necesita cuidados y mimo, igual que tú valoras las relaciones de calidad.",
+    traits: ["Calmante", "Empático/a", "Equilibrado/a", "Buena vibra"]
+  },
+  A: {
+    emoji: "🌿",
+    name: "Albahaca",
+    personality: "El/la Práctico/a",
+    quote: "Todo lo que haces tiene un propósito. Y además huele bien.",
+    desc: "Eficiente, resolutivo/a y siempre orientado/a a resultados. No pierdes el tiempo en cosas que no suman. Como la albahaca, eres útil en todo momento y creces rápido cuando se te da lo que necesitas.",
+    traits: ["Eficiente", "Resolutivo/a", "Orientado/a a resultados", "Práctico/a"]
+  },
+  B: {
+    emoji: "🌺",
+    name: "Bromelia",
+    personality: "El/la Showstopper",
+    quote: "Llegas, y la sala cambia. No lo puedes evitar.",
+    desc: "Carismático/a, energético/a y con presencia natural. Cuando entras en una reunión, todo el mundo lo nota. Como la bromelia, eres el elemento más llamativo de la habitación y tienes un talento innato para conectar con la gente.",
+    traits: ["Carismático/a", "Energético/a", "Llamativo/a", "Conector/a"]
+  }
+};
+
+let currentQ = 0;
+let answers = [];
+let selectedOption = null;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = [];
+  renderQuestion();
+  showScreen('screen-question');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOption = null;
+  document.getElementById('q-number').textContent = String(currentQ + 1).padStart(2, '0');
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-label').textContent = `Pregunta ${currentQ + 1} de ${questions.length}`;
+  document.getElementById('progress-bar').style.width = `${((currentQ + 1) / questions.length) * 100}%`;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-dot"></span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(i, btn);
+    list.appendChild(btn);
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.remove('enabled');
+  nextBtn.textContent = currentQ === questions.length - 1 ? 'Ver mi planta 🌿' : 'Siguiente →';
+}
+
+function selectOption(index, btn) {
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedOption = index;
+  document.getElementById('btn-next').classList.add('enabled');
+}
+
+function nextQuestion() {
+  if (selectedOption === null) return;
+  answers.push(questions[currentQ].options[selectedOption].letter);
+
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (currentQ === 0) {
+    showScreen('screen-welcome');
+  } else {
+    currentQ--;
+    answers.pop();
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  showScreen('screen-loading');
+  setTimeout(() => {
+    const counts = { P: 0, C: 0, L: 0, A: 0, B: 0 };
+    answers.forEach(l => counts[l]++);
+    const order = ['P', 'C', 'L', 'A', 'B'];
+    let winner = order[0];
+    order.forEach(l => { if (counts[l] > counts[winner]) winner = l; });
+
+    const plant = plants[winner];
+    document.getElementById('result-emoji').textContent = plant.emoji;
+    document.getElementById('result-name').textContent = plant.name;
+    document.getElementById('result-personality').textContent = plant.personality;
+    document.getElementById('result-quote').textContent = `"${plant.quote}"`;
+    document.getElementById('result-desc').textContent = plant.desc;
+
+    const traitsEl = document.getElementById('result-traits');
+    traitsEl.innerHTML = plant.traits.map(t => `<span class="trait-pill">${t}</span>`).join('');
+
+    showScreen('screen-result');
+  }, 2000);
+}
+
+function restartQuiz() {
+  startQuiz();
+}
+</script>
+</body>
+</html>
